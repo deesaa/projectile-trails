@@ -1,0 +1,66 @@
+Shader "Trails/Trail"
+{
+    Properties
+    {
+        _Color ("Color", Color) = (1,1,1,1)
+        _StartTime ("Start Time", Float) = 0
+        _TrailWidth ("Trail Width", Float) = 1
+        _TrailOffset ("Trail Offset", Float) = 0
+    }
+    SubShader
+    {
+        Tags {"Queue"="Transparent" "RenderType"="Transparent"}
+     
+        Blend SrcAlpha OneMinusSrcAlpha
+        Pass
+        {
+            CGPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+            
+            #include "UnityCG.cginc"
+
+            CBUFFER_START(UnityPerMaterial)
+                float _TrailWidth;
+                float _StartTime;
+                float _TrailOffset;
+                float4 _Color;
+            CBUFFER_END
+
+            struct appdata
+            {
+                float4 vertex : POSITION;
+                float2 uv : TEXCOORD0;
+                float4 direction : TEXCOORD1;
+            };
+
+            struct v2f
+            {
+                float2 uv : TEXCOORD0;
+                float4 vertex : SV_POSITION;
+            };
+
+
+            v2f vert (appdata v)
+            {
+                const float3 camDir = UNITY_MATRIX_V[2].xyz;
+                const float3 moveDir = v.direction.xyz;
+                const float3 surface = cross(camDir, moveDir);
+                const float3 vertexPos = v.vertex + (surface * _TrailWidth * v.direction.w);
+                
+                v2f o;
+                o.vertex = UnityObjectToClipPos(vertexPos);
+                o.uv = v.uv;
+                return o;
+            }
+
+            fixed4 frag(v2f i) : SV_Target
+            {
+                const float time = _StartTime + _Time.y;
+                const float alphaCut = step(i.uv.x - _TrailOffset, time); 
+                return fixed4(_Color.rgb, _Color.a * alphaCut);
+            }
+            ENDCG
+        }
+    }
+}

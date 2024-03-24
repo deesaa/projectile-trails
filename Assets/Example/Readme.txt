@@ -1,0 +1,1 @@
+It's not how the renderer is expected to be implemented by real applicants because it doesn't implement polyboards and uses the standard component. It's good if an applicant knows about this component but he's expected to implement a polyboard system from scratch.
