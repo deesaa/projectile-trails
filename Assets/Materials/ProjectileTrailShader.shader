@@ -10,7 +10,7 @@ Shader "Trails/Trail"
     SubShader
     {
         Tags {"Queue"="Transparent" "RenderType"="Transparent"}
-        Cull Off
+        Cull Back
         Blend SrcAlpha OneMinusSrcAlpha
         
         Pass
@@ -19,8 +19,6 @@ Shader "Trails/Trail"
             #pragma vertex vert
             #pragma fragment frag
             
-            #include "UnityCG.cginc"
-
             CBUFFER_START(UnityPerMaterial)
                 float _TrailWidth;
                 float _StartTime;
@@ -41,10 +39,8 @@ Shader "Trails/Trail"
                 float4 vertex : SV_POSITION;
             };
 
-
             v2f vert (appdata v)
             {
-                const float3 cam_dir = UNITY_MATRIX_V[2].xyz;
                 const float3 cam_world_pos = _WorldSpaceCameraPos;
                 const float3 cam_to_vertex = cam_world_pos - v.vertex;
                 const float3 move_dir = v.direction.xyz;
