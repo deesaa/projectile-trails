@@ -1,10 +1,17 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class ProjectileTrailRenderersPool
 {
     private Dictionary<int, List<SingleTrailRenderer>> _meshes = new();
-    
+    private Transform _poolHolder;
+
+    public ProjectileTrailRenderersPool(Transform poolHolder)
+    {
+        _poolHolder = poolHolder;
+    }
+
     /// <summary>
     /// Returns free mesh from pool or creates new
     /// </summary>
@@ -40,6 +47,15 @@ public class ProjectileTrailRenderersPool
         newRenderer.triangles = new int[newRenderer.sumTrianglesCount];
         newRenderer.vertexDirections = new Vector4[newRenderer.sumVerticesCount];
         newRenderer.vertexUVs = new Vector2[newRenderer.sumVerticesCount];
+
+        newRenderer.gameObject = new GameObject("Trail");
+        newRenderer.meshFilter = newRenderer.gameObject.AddComponent<MeshFilter>();
+        newRenderer.renderer = newRenderer.gameObject.AddComponent<MeshRenderer>();
+        newRenderer.renderer.receiveShadows = false;
+        newRenderer.renderer.shadowCastingMode = ShadowCastingMode.Off;
+        newRenderer.renderer.lightProbeUsage = LightProbeUsage.Off;
+        newRenderer.renderer.reflectionProbeUsage = ReflectionProbeUsage.Off;
+        newRenderer.meshFilter.mesh = newRenderer.trailMesh;
             
         for (int i = 0, ti = 0; ti < newRenderer.sumTrianglesCount; i += 2, ti += 6)
         {
@@ -69,11 +85,15 @@ public class ProjectileTrailRenderersPool
         public Vector2[] vertexUVs;
         public int sumVerticesCount;
         public int sumTrianglesCount;
+        public MeshFilter meshFilter;
+        public GameObject gameObject;
+        public MeshRenderer renderer;
         public void ReturnToPool() => originPool.ReturnToPool(this);
     }
 
     private void ReturnToPool(SingleTrailRenderer singleTrailRenderer)
     {
+        singleTrailRenderer.gameObject.SetActive(false);
         _meshes[singleTrailRenderer.meshSegmentsCount].Add(singleTrailRenderer);
     }
 }

@@ -46,6 +46,8 @@ namespace TrailRenderer
         private RenderParams _renderParams;
         private ProjectileTrailRenderersPool.SingleTrailRenderer[] _activeRenderers;
 
+        private Mesh _globalMesh;
+
         private void Start()
         {
             if (gun != null)
@@ -61,8 +63,9 @@ namespace TrailRenderer
                 _vertexBuffer = new Vector3[_maxSumVerticesCount];
                 _vertexDirectionsBuffer = new Vector4[_maxSumVerticesCount];
                 _vertexBufferUVs = new Vector2[_maxSumVerticesCount];
-                _trailRenderersPool = new();
+                _trailRenderersPool = new(transform);
                 _activeRenderers = new ProjectileTrailRenderersPool.SingleTrailRenderer[gun.maxProjectileCount];
+                _globalMesh = new Mesh();
             }
         }
 
@@ -144,7 +147,10 @@ namespace TrailRenderer
             singleRenderer.trailMesh.vertices = singleRenderer.vertices;
             singleRenderer.trailMesh.SetUVs(0, singleRenderer.vertexUVs);
             singleRenderer.trailMesh.SetUVs(1, singleRenderer.vertexDirections);
+            singleRenderer.renderer.sharedMaterial = _materialInstance;
+            singleRenderer.gameObject.SetActive(true);
         }
+        
 
         /// <summary>
         /// A callback that is called when a projectile is removed.
@@ -154,19 +160,6 @@ namespace TrailRenderer
         private void OnProjectileRemoved(int index, ref Gun.Projectile projectile)
         {
             _activeRenderers[index].ReturnToPool();
-            _activeRenderers[index] = null;
-        }
-
-        //Renders all active trail meshes
-        private void LateUpdate()
-        {
-            var trs = transform.localToWorldMatrix;
-            for (int i = 0; i < _activeRenderers.Length; i++)
-            {
-                var activeRenderer = _activeRenderers[i];
-                if(activeRenderer == null) continue;
-                Graphics.RenderMesh(_renderParams, activeRenderer.trailMesh, 0, trs);
-            }
         }
     }
 }
