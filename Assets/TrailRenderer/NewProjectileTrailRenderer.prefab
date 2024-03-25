@@ -46,6 +46,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gun: {fileID: 0}
   trailMaterial: {fileID: 2100000, guid: b25c3cbdfe3afb747a4e150e8a288310, type: 2}
-  width: 0.5
-  trailOffset: -1
+  width: 1
+  trailOffset: 0
   segmentLength: 20
+  minBetweenSegmentAngle: 1.5
