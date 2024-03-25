@@ -12,6 +12,7 @@ Shader "Trails/Trail"
         Tags {"Queue"="Transparent" "RenderType"="Transparent"}
         Cull Back
         Blend SrcAlpha OneMinusSrcAlpha
+        ZWrite Off
         
         Pass
         {
