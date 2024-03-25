@@ -42,8 +42,9 @@ namespace TrailRenderer
         private Vector2[] _vertexBufferUVs;
         private Vector4[] _vertexDirectionsBuffer;
 
-        private Dictionary<int, ProjectileTrailRenderersPool.SingleTrailRenderer> _activeRenderers;
+        //private Dictionary<int, ProjectileTrailRenderersPool.SingleTrailRenderer> _activeRenderers;
         private RenderParams _renderParams;
+        private ProjectileTrailRenderersPool.SingleTrailRenderer[] _activeRenderers;
 
         private void Start()
         {
@@ -61,7 +62,7 @@ namespace TrailRenderer
                 _vertexDirectionsBuffer = new Vector4[_maxSumVerticesCount];
                 _vertexBufferUVs = new Vector2[_maxSumVerticesCount];
                 _trailRenderersPool = new();
-                _activeRenderers = new();
+                _activeRenderers = new ProjectileTrailRenderersPool.SingleTrailRenderer[gun.maxProjectileCount];
             }
         }
 
@@ -134,7 +135,7 @@ namespace TrailRenderer
             if(meshSegments == 0) return;
 
             var singleRenderer = _trailRenderersPool.GetWithSegmentsCount(meshSegments);
-            _activeRenderers.Add(index, singleRenderer);
+            _activeRenderers[index] = singleRenderer;
         
             Array.Copy(_vertexBuffer, singleRenderer.vertices, vertexIndex);
             Array.Copy(_vertexBufferUVs, singleRenderer.vertexUVs, vertexIndex);
@@ -153,16 +154,18 @@ namespace TrailRenderer
         private void OnProjectileRemoved(int index, ref Gun.Projectile projectile)
         {
             _activeRenderers[index].ReturnToPool();
-            _activeRenderers.Remove(index);
+            _activeRenderers[index] = null;
         }
 
         //Renders all active trail meshes
         private void LateUpdate()
         {
-            foreach (var activeRenderer in _activeRenderers)
+            var trs = transform.localToWorldMatrix;
+            for (int i = 0; i < _activeRenderers.Length; i++)
             {
-                var trs = transform.localToWorldMatrix;
-                Graphics.RenderMesh(_renderParams, activeRenderer.Value.trailMesh, 0, trs);
+                var activeRenderer = _activeRenderers[i];
+                if(activeRenderer == null) continue;
+                Graphics.RenderMesh(_renderParams, activeRenderer.trailMesh, 0, trs);
             }
         }
     }
