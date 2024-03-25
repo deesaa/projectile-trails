@@ -10,8 +10,8 @@ Shader "Trails/Trail"
     SubShader
     {
         Tags {"Queue"="Transparent" "RenderType"="Transparent"}
-     
         Blend SrcAlpha OneMinusSrcAlpha
+        
         Pass
         {
             CGPROGRAM
@@ -43,13 +43,13 @@ Shader "Trails/Trail"
 
             v2f vert (appdata v)
             {
-                const float3 camDir = UNITY_MATRIX_V[2].xyz;
-                const float3 moveDir = v.direction.xyz;
-                const float3 surface = cross(camDir, moveDir);
-                const float3 vertexPos = v.vertex + (surface * _TrailWidth * v.direction.w);
+                const float3 cam_dir = UNITY_MATRIX_V[2].xyz;
+                const float3 move_dir = v.direction.xyz;
+                const float3 surface = cross(cam_dir, move_dir);
+                const float3 vertex_pos = v.vertex + (surface * _TrailWidth * v.direction.w);
                 
                 v2f o;
-                o.vertex = UnityObjectToClipPos(vertexPos);
+                o.vertex = UnityObjectToClipPos(vertex_pos);
                 o.uv = v.uv;
                 return o;
             }
@@ -57,8 +57,8 @@ Shader "Trails/Trail"
             fixed4 frag(v2f i) : SV_Target
             {
                 const float time = _StartTime + _Time.y;
-                const float alphaCut = step(i.uv.x - _TrailOffset, time); 
-                return fixed4(_Color.rgb, _Color.a * alphaCut);
+                const float alpha_cut = step(i.uv.x - _TrailOffset, time); 
+                return fixed4(_Color.rgb, _Color.a * alpha_cut);
             }
             ENDCG
         }
