@@ -3,105 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-public class ProjectileTrailRenderersPool
-{
-    private Dictionary<int, List<SingleTrailRenderer>> _meshes = new();
-    private int _poolSegmentation;
-    private ProjectileTrailRenderer _renderer;
-
-    public ProjectileTrailRenderersPool(ProjectileTrailRenderer renderer, int poolSegmentation = 1)
-    {
-        _poolSegmentation = poolSegmentation;
-        _renderer = renderer;
-    }
-
-    public SingleTrailRenderer GetWithSegmentsCount(int meshSegmentsCount)
-    {
-        if (!_meshes.TryGetValue(meshSegmentsCount, out var renderers))
-        {
-            _meshes.Add(meshSegmentsCount, renderers = new List<SingleTrailRenderer>());
-            return CreateRenderer(meshSegmentsCount); 
-        }
-        
-        var takeIndex = renderers.Count - 1;
-        if (takeIndex == -1)
-        {
-            return CreateRenderer(meshSegmentsCount);
-        }
-        
-        var renderer = renderers[takeIndex];
-        renderers.RemoveAt(takeIndex);
-        return renderer;
-    }
-    
-    private SingleTrailRenderer CreateRenderer(int meshSegmentsCount)
-    {
-        var newRenderer = new SingleTrailRenderer();
-        newRenderer.sumVerticesCount = 2 + (meshSegmentsCount * 2);
-        newRenderer.sumTrianglesCount = (meshSegmentsCount * 6);
-        var go = newRenderer.trailGameObject = new GameObject("Trail Renderer");
-        go.transform.SetParent(_renderer.Holder);
-        var trailRenderer = newRenderer.trailMeshRenderer = go.AddComponent<MeshRenderer>();
-        trailRenderer.shadowCastingMode = ShadowCastingMode.Off;
-        trailRenderer.receiveShadows = false;
-        trailRenderer.lightProbeUsage = LightProbeUsage.Off;
-        trailRenderer.reflectionProbeUsage = ReflectionProbeUsage.Off;
-        trailRenderer.allowOcclusionWhenDynamic = false;
-        var filter = newRenderer.trailMeshFilter = go.AddComponent<MeshFilter>();
-        var mesh = newRenderer.trailMesh = new Mesh();
-        newRenderer.trailMesh.MarkDynamic();
-        filter.mesh = mesh;
-        trailRenderer.sharedMaterial = _renderer.MaterialInstance;
-        newRenderer.vertices = new Vector3[newRenderer.sumVerticesCount];
-        newRenderer.triangles = new int[newRenderer.sumTrianglesCount];
-        newRenderer.vertexDirections = new Vector4[newRenderer.sumVerticesCount];
-        newRenderer.vertexUVs = new Vector2[newRenderer.sumVerticesCount];
-            
-        for (int i = 0, ti = 0; ti < newRenderer.sumTrianglesCount; i += 2, ti += 6)
-        {
-            newRenderer.triangles[ti] = i;
-            newRenderer.triangles[ti+1] = i + 2;
-            newRenderer.triangles[ti+2] = i + 1;
-            newRenderer.triangles[ti+3] = i + 1;
-            newRenderer.triangles[ti+4] = i + 2;
-            newRenderer.triangles[ti+5] = i + 3;
-        }
-
-        newRenderer.trailMesh.vertices = newRenderer.vertices;
-        newRenderer.trailMesh.triangles = newRenderer.triangles;
-        newRenderer.originPool = this;
-        newRenderer.meshSegmentsCount = meshSegmentsCount;
-        return newRenderer;
-    }
-    
-    public class SingleTrailRenderer
-    {
-        public ProjectileTrailRenderersPool originPool;
-        public int meshSegmentsCount;
-        public Mesh trailMesh;
-        public GameObject trailGameObject;
-        public MeshRenderer trailMeshRenderer;
-        public MeshFilter trailMeshFilter;
-        public Vector3[] vertices;
-        public int[] triangles;
-        public Vector4[] vertexDirections;
-        public Vector2[] vertexUVs;
-        public int sumVerticesCount;
-        public int sumTrianglesCount;
-
-        public void ReturnToPool()
-        {
-            originPool.ReturnToPool(this);
-        }
-    }
-
-    private void ReturnToPool(SingleTrailRenderer singleTrailRenderer)
-    {
-        singleTrailRenderer.trailGameObject.SetActive(false);
-        _meshes[singleTrailRenderer.meshSegmentsCount].Add(singleTrailRenderer);
-    }
-}
-
 public class ProjectileTrailRenderer : MonoBehaviour
 {
     public Gun gun;
@@ -126,21 +27,18 @@ public class ProjectileTrailRenderer : MonoBehaviour
     private float _simulationTimeDelta;
     private int _maxTrailMeshSegments;
     private int _maxSumVerticesCount;
-    private int _maxSumTrianglesCount;
     private float _firstProjectileCreationTime = -1;
+    private bool _firstProjectileCreated;
     private ProjectileTrailRenderersPool _trailRenderersPool;
     private int _initedRenderersCount;
     
     private static readonly int StartTime = Shader.PropertyToID("_StartTime");
     private static readonly int TrailWidth = Shader.PropertyToID("_TrailWidth");
     private static readonly int TrailOffset = Shader.PropertyToID("_TrailOffset");
-    public Transform Holder => gameObject.transform;
-    public Material MaterialInstance => _materialInstance;
 
     private Vector3[] _vertexBuffer;
     private Vector2[] _vertexBufferUVs;
     private Vector4[] _vertexDirectionsBuffer;
-    private int[] _triangleBuffer;
 
     private Dictionary<int, ProjectileTrailRenderersPool.SingleTrailRenderer> _activeRenderers;
 
@@ -157,13 +55,10 @@ public class ProjectileTrailRenderer : MonoBehaviour
             _maxTrailMeshSegments = Mathf.CeilToInt(_maxTrailPathLength / segmentLength);
             _simulationTimeDelta = gun.lifetime / _maxTrailMeshSegments;
             _maxSumVerticesCount = 2 + (_maxTrailMeshSegments * 2);
-            _maxSumTrianglesCount = (_maxSumVerticesCount * 2) - 2;
             _vertexBuffer = new Vector3[_maxSumVerticesCount];
-            _triangleBuffer = new int[_maxSumTrianglesCount];
             _vertexDirectionsBuffer = new Vector4[_maxSumVerticesCount];
             _vertexBufferUVs = new Vector2[_maxSumVerticesCount];
-            
-            _trailRenderersPool = new ProjectileTrailRenderersPool(this, 1);
+            _trailRenderersPool = new();
             _activeRenderers = new();
         }
     }
@@ -175,8 +70,9 @@ public class ProjectileTrailRenderer : MonoBehaviour
     /// <param name="projectile">The created projectile.</param>
     private void OnProjectileCreated(int index, ref Gun.Projectile projectile)
     {
-        if (_firstProjectileCreationTime == -1)
+        if (!_firstProjectileCreated)
         {
+            _firstProjectileCreated = true;
             _firstProjectileCreationTime = Time.timeSinceLevelLoad;
             _materialInstance = new Material(trailMaterial);
             _materialInstance.SetFloat(TrailWidth, width);
@@ -189,15 +85,14 @@ public class ProjectileTrailRenderer : MonoBehaviour
         float projectileCreationLocalTime = Time.timeSinceLevelLoad - _firstProjectileCreationTime; 
         var direction = projectileCopy.velocity.normalized;
         var position = projectileCopy.position;
+        
         _vertexBuffer[0] = position;
         _vertexBuffer[1] = position;
-        
         _vertexDirectionsBuffer[0] = new Vector4(direction.x, direction.y, direction.z, -1f);
         _vertexDirectionsBuffer[1] = new Vector4(direction.x, direction.y, direction.z, 1f);
-        
         _vertexBufferUVs[0] = new Vector2(projectileCreationLocalTime, 0f);
         _vertexBufferUVs[1] = new Vector2(projectileCreationLocalTime, 1f);
-
+        
         int vertexIndex = 2;
         int meshSegments = 0;
         var simulationTime = 0f;
@@ -230,7 +125,6 @@ public class ProjectileTrailRenderer : MonoBehaviour
         
         if(meshSegments == 0) return;
 
-        var finalVertexCount = vertexIndex;
         var singleRenderer = _trailRenderersPool.GetWithSegmentsCount(meshSegments);
         _activeRenderers.Add(index, singleRenderer);
         
@@ -241,15 +135,7 @@ public class ProjectileTrailRenderer : MonoBehaviour
         singleRenderer.trailMesh.vertices = singleRenderer.vertices;
         singleRenderer.trailMesh.SetUVs(0, singleRenderer.vertexUVs);
         singleRenderer.trailMesh.SetUVs(1, singleRenderer.vertexDirections);
-        singleRenderer.trailMeshFilter.mesh = singleRenderer.trailMesh;
-        singleRenderer.trailGameObject.SetActive(true);
     }
-    
-    /// <summary>
-    /// Method returns renderer for target projectile index. Initializes renderer if it not exist.
-    /// </summary>
-    /// <param name="index">Unique numeric ID of a projectile in range [0, gun.maxProjectileCount - 1].</param>
-    
 
     /// <summary>
     /// A callback that is called when a projectile is removed.
@@ -270,5 +156,20 @@ public class ProjectileTrailRenderer : MonoBehaviour
     private void OnProjectileMoved(int index, ref Gun.Projectile projectile)
     {
        
+    }
+
+    //Renders all active trail meshes
+    private void LateUpdate()
+    {
+        foreach (var activeRenderer in _activeRenderers)
+        {
+            var trs = transform.localToWorldMatrix;
+            var renderParams = new RenderParams(_materialInstance);
+            renderParams.receiveShadows = false;
+            renderParams.shadowCastingMode = ShadowCastingMode.Off;
+            renderParams.lightProbeUsage = LightProbeUsage.Off;
+            renderParams.reflectionProbeUsage = ReflectionProbeUsage.Off;
+            Graphics.RenderMesh(renderParams, activeRenderer.Value.trailMesh, 0, trs);
+        }
     }
 }

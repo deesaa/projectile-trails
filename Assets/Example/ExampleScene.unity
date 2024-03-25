@@ -288,7 +288,7 @@ PrefabInstance:
     - target: {fileID: 4734209194817192943, guid: 9698c845412a0e24a8130333af4c8c86,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8029643651293513159, guid: 9698c845412a0e24a8130333af4c8c86,
         type: 3}
@@ -400,7 +400,7 @@ Camera:
   m_GameObject: {fileID: 534669902}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 2
+  m_ClearFlags: 1
   m_BackGroundColor: {r: 0.40495872, g: 1, b: 0.9869183, a: 0.7647059}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
@@ -493,8 +493,18 @@ PrefabInstance:
       objectReference: {fileID: 1310455925}
     - target: {fileID: 488641406822639844, guid: 5273d0a3d91b2a14b8398e210d738d28,
         type: 3}
+      propertyPath: width
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 488641406822639844, guid: 5273d0a3d91b2a14b8398e210d738d28,
+        type: 3}
       propertyPath: trailOffset
-      value: -0.1
+      value: -0.05
+      objectReference: {fileID: 0}
+    - target: {fileID: 488641406822639844, guid: 5273d0a3d91b2a14b8398e210d738d28,
+        type: 3}
+      propertyPath: minBetweenSegmentAngle
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 6420504639648273404, guid: 5273d0a3d91b2a14b8398e210d738d28,
         type: 3}
@@ -554,7 +564,7 @@ PrefabInstance:
     - target: {fileID: 8519525803677806001, guid: 5273d0a3d91b2a14b8398e210d738d28,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -5405,7 +5415,7 @@ MonoBehaviour:
   rate: 20
   startingVelocity: 150
   maxAngle: 30
-  lifetime: 10
+  lifetime: 15
 --- !u!4 &1310455926
 Transform:
   m_ObjectHideFlags: 0
