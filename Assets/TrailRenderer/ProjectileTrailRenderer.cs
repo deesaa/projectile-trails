@@ -42,7 +42,6 @@ namespace TrailRenderer
         private Vector2[] _vertexBufferUVs;
         private Vector4[] _vertexDirectionsBuffer;
 
-        //private Dictionary<int, ProjectileTrailRenderersPool.SingleTrailRenderer> _activeRenderers;
         private RenderParams _renderParams;
         private ProjectileTrailRenderersPool.SingleTrailRenderer[] _activeRenderers;
 
