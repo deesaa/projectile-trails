@@ -596,21 +596,6 @@ PrefabInstance:
       propertyPath: gun
       value: 
       objectReference: {fileID: 1310455925}
-    - target: {fileID: 488641406822639844, guid: 5273d0a3d91b2a14b8398e210d738d28,
-        type: 3}
-      propertyPath: width
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 488641406822639844, guid: 5273d0a3d91b2a14b8398e210d738d28,
-        type: 3}
-      propertyPath: trailOffset
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 488641406822639844, guid: 5273d0a3d91b2a14b8398e210d738d28,
-        type: 3}
-      propertyPath: minBetweenSegmentAngle
-      value: 1.5
-      objectReference: {fileID: 0}
     - target: {fileID: 6420504639648273404, guid: 5273d0a3d91b2a14b8398e210d738d28,
         type: 3}
       propertyPath: m_LocalPosition.x
