@@ -3,11 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-// This is just an example, you can use these callbacks if you want.
-
-// Projectiles will be added and removed cyclically,
-// so you may expect projectile indices to be persistent.
-
 public class ProjectileTrailRenderersPool
 {
     private Dictionary<int, List<SingleTrailRenderer>> _meshes = new();
@@ -61,12 +56,6 @@ public class ProjectileTrailRenderersPool
         newRenderer.triangles = new int[newRenderer.sumTrianglesCount];
         newRenderer.vertexDirections = new Vector4[newRenderer.sumVerticesCount];
         newRenderer.vertexUVs = new Vector2[newRenderer.sumVerticesCount];
-        
-        /*for (int i = 0, vi = 0; vi < newRenderer.sumVerticesCount; i += 1, vi += 2)
-        {
-            newRenderer.vertices[vi] = new Vector3(0, i,0);
-            newRenderer.vertices[vi+1] = new Vector3(1, i,0);
-        }*/
             
         for (int i = 0, ti = 0; ti < newRenderer.sumTrianglesCount; i += 2, ti += 6)
         {
@@ -82,7 +71,6 @@ public class ProjectileTrailRenderersPool
         newRenderer.trailMesh.triangles = newRenderer.triangles;
         newRenderer.originPool = this;
         newRenderer.meshSegmentsCount = meshSegmentsCount;
-        
         return newRenderer;
     }
     
@@ -90,7 +78,6 @@ public class ProjectileTrailRenderersPool
     {
         public ProjectileTrailRenderersPool originPool;
         public int meshSegmentsCount;
-        
         public Mesh trailMesh;
         public GameObject trailGameObject;
         public MeshRenderer trailMeshRenderer;
@@ -99,7 +86,6 @@ public class ProjectileTrailRenderersPool
         public int[] triangles;
         public Vector4[] vertexDirections;
         public Vector2[] vertexUVs;
-        
         public int sumVerticesCount;
         public int sumTrianglesCount;
 
@@ -206,8 +192,8 @@ public class ProjectileTrailRenderer : MonoBehaviour
         _vertexBuffer[0] = position;
         _vertexBuffer[1] = position;
         
-        _vertexDirectionsBuffer[0] = new Vector4(direction.x, direction.y, direction.z, 1f);
-        _vertexDirectionsBuffer[1] = new Vector4(direction.x, direction.y, direction.z, -1f);
+        _vertexDirectionsBuffer[0] = new Vector4(direction.x, direction.y, direction.z, -1f);
+        _vertexDirectionsBuffer[1] = new Vector4(direction.x, direction.y, direction.z, 1f);
         
         _vertexBufferUVs[0] = new Vector2(projectileCreationLocalTime, 0f);
         _vertexBufferUVs[1] = new Vector2(projectileCreationLocalTime, 1f);

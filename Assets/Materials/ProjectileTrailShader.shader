@@ -10,6 +10,7 @@ Shader "Trails/Trail"
     SubShader
     {
         Tags {"Queue"="Transparent" "RenderType"="Transparent"}
+        Cull Off
         Blend SrcAlpha OneMinusSrcAlpha
         
         Pass
@@ -44,8 +45,10 @@ Shader "Trails/Trail"
             v2f vert (appdata v)
             {
                 const float3 cam_dir = UNITY_MATRIX_V[2].xyz;
+                const float3 cam_world_pos = _WorldSpaceCameraPos;
+                const float3 cam_to_vertex = cam_world_pos - v.vertex;
                 const float3 move_dir = v.direction.xyz;
-                const float3 surface = cross(cam_dir, move_dir);
+                const float3 surface = normalize(cross(cam_to_vertex , move_dir));
                 const float3 vertex_pos = v.vertex + (surface * _TrailWidth * v.direction.w);
                 
                 v2f o;
