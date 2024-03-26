@@ -45,7 +45,7 @@ Shader "Trails/Trail"
                 const float3 cam_world_pos = _WorldSpaceCameraPos;
                 const float3 cam_to_vertex = cam_world_pos - v.vertex;
                 const float3 move_dir = v.direction.xyz;
-                const float3 surface = normalize(cross(cam_to_vertex , move_dir));
+                const float3 surface = normalize(cross(cam_to_vertex, move_dir));
                 const float3 vertex_pos = v.vertex + (surface * _TrailWidth * v.direction.w);
                 
                 v2f o;

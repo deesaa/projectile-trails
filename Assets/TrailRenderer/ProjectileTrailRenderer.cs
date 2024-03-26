@@ -81,7 +81,6 @@ namespace TrailRenderer
                 _materialInstance.SetFloat(StartTime, _firstProjectileCreationTime);
                 _materialInstance.SetFloat(TrailOffset, trailOffset);
                 _renderParams = new RenderParams(_materialInstance);
-                _renderParams = new RenderParams(_materialInstance);
                 _renderParams.receiveShadows = false;
                 _renderParams.shadowCastingMode = ShadowCastingMode.Off;
                 _renderParams.lightProbeUsage = LightProbeUsage.Off;
@@ -90,7 +89,7 @@ namespace TrailRenderer
         
             Gun.Projectile projectileCopy = projectile; 
         
-            float projectileCreationLocalTime = Time.timeSinceLevelLoad - _firstProjectileCreationTime; 
+            var projectileCreationLocalTime = Time.timeSinceLevelLoad - _firstProjectileCreationTime; 
             var direction = projectileCopy.velocity.normalized;
             var position = projectileCopy.position;
         
@@ -101,8 +100,8 @@ namespace TrailRenderer
             _vertexBufferUVs[0] = new Vector2(projectileCreationLocalTime, 0f);
             _vertexBufferUVs[1] = new Vector2(projectileCreationLocalTime, 1f);
         
-            int vertexIndex = 2;
-            int meshSegments = 0;
+            var vertexIndex = 2;
+            var meshSegments = 0;
             var simulationTime = 0f;
             Vector3 lastDirection = direction;
             while (simulationTime < gun.lifetime)
