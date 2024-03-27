@@ -1,3 +1,12 @@
+## Update 2
+
+> Assets -> TrailRendererInstanced -> ProjectileTrailRendererInstanced.cs
+
+> Assets -> Materials -> ProjectileTrailShaderInstanced.shader
+
+Теперь все проджекатйлы рисуются с помощью GPU Instancing через одну сетку и один материал
+
+## Update 1
 > Assets -> TrailRenderer -> ProjectileTrailRenderer.cs
 
 > Assets -> Materials -> ProjectileTrailShader.shader

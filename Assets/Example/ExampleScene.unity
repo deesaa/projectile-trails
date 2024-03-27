@@ -5505,7 +5505,7 @@ MonoBehaviour:
   rate: 100
   startingVelocity: 150
   maxAngle: 30
-  lifetime: 1
+  lifetime: 15
 --- !u!4 &1310455926
 Transform:
   m_ObjectHideFlags: 0
