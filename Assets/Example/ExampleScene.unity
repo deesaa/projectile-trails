@@ -838,7 +838,7 @@ ParticleSystem:
     startLifetime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 10
+      scalar: 1
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -5505,7 +5505,7 @@ MonoBehaviour:
   rate: 100
   startingVelocity: 150
   maxAngle: 30
-  lifetime: 15
+  lifetime: 1
 --- !u!4 &1310455926
 Transform:
   m_ObjectHideFlags: 0

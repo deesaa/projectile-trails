@@ -64,7 +64,7 @@ Shader "Trails/TrailInstanced"
                 const float3 move_dir = normalize(velocity);
                 const float3 cam_to_vertex = cam_world_pos - position;
                 const float3 surface = normalize(cross(cam_to_vertex, move_dir));
-                const float3 vertex_pos = position + (surface * 1 * v.uv.y);
+                const float3 vertex_pos = position + (surface * _TrailWidth * v.uv.y);
                 
                 v2f o;
                 o.vertex = UnityObjectToClipPos(vertex_pos);
