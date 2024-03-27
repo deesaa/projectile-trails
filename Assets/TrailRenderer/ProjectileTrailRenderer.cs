@@ -9,7 +9,7 @@ namespace TrailRenderer
     {
         public Gun gun;
     
-        [Tooltip("Used only with special shader Trails/Trail")]
+        [Tooltip("Used only with special shader Trails/Trail Instanced")]
         public Material trailMaterial;
 
         [Tooltip("Width of a trail")]

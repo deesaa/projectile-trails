@@ -654,7 +654,7 @@ PrefabInstance:
     - target: {fileID: 8519525803677806001, guid: 5273d0a3d91b2a14b8398e210d738d28,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -5502,7 +5502,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65a6f51ecd8b3b943a1b0459e4107cfa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rate: 20
+  rate: 100
   startingVelocity: 150
   maxAngle: 30
   lifetime: 15
@@ -5533,6 +5533,55 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af7c18652a9d2824d9ff657a5a56d550, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!4 &2167404477486229220
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3545867293054376105}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &3545867293054376105
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2167404477486229220}
+  - component: {fileID: 3545867293054376106}
+  m_Layer: 0
+  m_Name: InstancedProjectileTrailRenderer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &3545867293054376106
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3545867293054376105}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5ed73339d374622a6645f01b8baef54, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gun: {fileID: 1310455925}
+  trailMaterial: {fileID: 2100000, guid: 2d1b64e622c28df4a9319060c7e9da28, type: 2}
+  width: 0.5
+  trailOffset: 0
+  segmentLength: 20
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -5542,4 +5591,5 @@ SceneRoots:
   - {fileID: 1310455926}
   - {fileID: 199744015}
   - {fileID: 1194803479}
+  - {fileID: 2167404477486229220}
   - {fileID: 315358701}
