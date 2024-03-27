@@ -32,34 +32,27 @@ namespace TrailRenderer
         [Tooltip("The max length of a polygon (shorter polygons make trails smoother but more complex)")]
         public float segmentLength = 20.0f;
         
-        [Tooltip("The max length of a polygon (shorter polygons make trails smoother but more complex)")]
+        [Tooltip("Time after this trail fades")]
         public float trailShowTime = 0.3f;
-        
         
         private float _maxTrailPathLength;
         private float _simulationTimeDelta;
         private int _maxTrailMeshSegments;
-        private int _maxSumVerticesCount;
         private int _initedRenderersCount;
-    
         private static readonly int TrailWidth = Shader.PropertyToID("_TrailWidth");
         private static readonly int TrailOffset = Shader.PropertyToID("_TrailOffset");
-        private static readonly int StartVelocity = Shader.PropertyToID("_StartVelocity");
-        private static readonly int StartPosition = Shader.PropertyToID("_StartPosition");
+        private static readonly int StartVelocityAndPassedTime = Shader.PropertyToID("_StartVelocityAndPassedTime");
         private static readonly int Gravity = Shader.PropertyToID("_Gravity");
-        private static readonly int PassedTime = Shader.PropertyToID("_PassedTime");
-        
-        private Vector2[] _vertexBufferUVs;
+        private static readonly int TrailShowTime = Shader.PropertyToID("_TrailShowTime");
 
-        private RenderParams _renderParams;
+        private int _maxSumVerticesCount;
+        private Vector2[] _vertexBufferUVs;
         private Mesh _meshInstance;
         private Material _materialInstance;
-        
         private Matrix4x4[] _trailTransforms;
-        private float[] _trailPassedTimes;
-        private Vector4[] _startPositions;
-        private Vector4[] _startVelocities;
+        private Vector4[] _startVelocitiesAndPassedTime;
         private MaterialPropertyBlock _materialPropertyBlock;
+        private Camera _camera;
 
         private void InitMesh(int meshSegmentsCount, float projectileSimulationDeltaTime)
         {
@@ -109,22 +102,13 @@ namespace TrailRenderer
                 _maxTrailMeshSegments = Mathf.CeilToInt(_maxTrailPathLength / segmentLength);
                 _simulationTimeDelta = gun.lifetime / _maxTrailMeshSegments;
                 _maxSumVerticesCount = 2 + (_maxTrailMeshSegments * 2);
-                _vertexBufferUVs = new Vector2[_maxSumVerticesCount];
                 _trailTransforms = new Matrix4x4[gun.maxProjectileCount];
-                _trailPassedTimes = new float[gun.maxProjectileCount];
-                _startPositions = new Vector4[gun.maxProjectileCount];
-                _startVelocities = new Vector4[gun.maxProjectileCount];
+                _startVelocitiesAndPassedTime = new Vector4[gun.maxProjectileCount];
+                _vertexBufferUVs = new Vector2[_maxSumVerticesCount];
                 _materialPropertyBlock = new MaterialPropertyBlock();
-                _materialPropertyBlock.SetFloatArray(PassedTime, _trailPassedTimes);
-                _materialPropertyBlock.SetVectorArray(StartVelocity, _startVelocities);
-                _materialPropertyBlock.SetVectorArray(StartPosition, _startPositions);
-
-                var trs = Matrix4x4.Translate(Vector3.zero);
-                for (int i = 0; i < _trailTransforms.Length; i++)
-                {
-                    _trailTransforms[i] = trs;
-                }
+                _materialPropertyBlock.SetVectorArray(StartVelocityAndPassedTime, _startVelocitiesAndPassedTime);
                 InitMesh(_maxTrailMeshSegments, _simulationTimeDelta);
+                _camera = Camera.main;
             }
         }
 
@@ -139,35 +123,21 @@ namespace TrailRenderer
             if (!_firstProjectileCreated)
             {
                 _firstProjectileCreated = true;
-
                 _materialInstance = new Material(trailMaterial);
-                
                 _materialPropertyBlock.SetFloat(TrailWidth, width);
                 _materialPropertyBlock.SetFloat(TrailOffset, trailOffset);
                 _materialPropertyBlock.SetFloat(TrailShowTime, trailShowTime);
-                _materialPropertyBlock.SetVector(StartVelocity, projectile.velocity);
-                _materialPropertyBlock.SetVector(StartPosition, projectile.position);
+                _materialPropertyBlock.SetVector(StartVelocityAndPassedTime, projectile.velocity);
                 _materialPropertyBlock.SetVector(Gravity, Physics.gravity);
-                _materialPropertyBlock.SetFloat(PassedTime, 0f);
-            
-                _renderParams = new RenderParams();
-                _renderParams.receiveShadows = false;
-                _renderParams.shadowCastingMode = ShadowCastingMode.Off;
-                _renderParams.lightProbeUsage = LightProbeUsage.Off;
-                _renderParams.reflectionProbeUsage = ReflectionProbeUsage.Off;
             }
-
-            _startPositions[index] = projectile.position;
-            _startVelocities[index] = projectile.velocity;
-            _trailPassedTimes[index] = projectile.lifetime;
+            _trailTransforms[index] = Matrix4x4.Translate(projectile.position);
+            _startVelocitiesAndPassedTime[index] = projectile.velocity;
         }
-
-        private Material[] _trailMaterials;
-        private static readonly int TrailShowTime = Shader.PropertyToID("_TrailShowTime");
-
+        
         private void OnProjectileMoved(int index, ref Gun.Projectile projectile)
         {
-            _trailPassedTimes[index] = projectile.lifetime;
+            var data = _startVelocitiesAndPassedTime[index];
+            _startVelocitiesAndPassedTime[index] = new Vector4(data.x, data.y, data.z, projectile.lifetime);
         }
         
 
@@ -180,24 +150,16 @@ namespace TrailRenderer
         {
             
         }
-
-   
+        
         //Renders all active trail meshes
         private void LateUpdate()
         {
             if(!_firstProjectileCreated) return;
             
-            var trs = transform.localToWorldMatrix;
-            _materialPropertyBlock.SetFloatArray(PassedTime, _trailPassedTimes);
-            _materialPropertyBlock.SetVectorArray(StartVelocity, _startVelocities);
-            _materialPropertyBlock.SetVectorArray(StartPosition, _startPositions);
-            
+            _materialPropertyBlock.SetVectorArray(StartVelocityAndPassedTime, _startVelocitiesAndPassedTime);
             Graphics.DrawMeshInstanced(_meshInstance, 0, 
                 _materialInstance, _trailTransforms, _trailTransforms.Length, _materialPropertyBlock, 
-                ShadowCastingMode.Off, false);
-            
-            
-            //Graphics.DrawMesh(_meshInstance, Vector3.zero, Quaternion.identity, _materialInstance, 0);
+                ShadowCastingMode.Off, false, 0, _camera, LightProbeUsage.Off);
         }
     }
 }

@@ -33,9 +33,7 @@ Shader "Trails/TrailInstanced"
             CBUFFER_END
 
             UNITY_INSTANCING_BUFFER_START(InstanceProperties)
-                    UNITY_DEFINE_INSTANCED_PROP(fixed4, _StartVelocity)
-                    UNITY_DEFINE_INSTANCED_PROP(fixed4, _StartPosition)
-                    UNITY_DEFINE_INSTANCED_PROP(fixed, _PassedTime)
+                    UNITY_DEFINE_INSTANCED_PROP(fixed4, _StartVelocityAndPassedTime)
             UNITY_INSTANCING_BUFFER_END(InstanceProperties)
 
             struct appdata
@@ -54,16 +52,14 @@ Shader "Trails/TrailInstanced"
             v2f vert (appdata v)
             {
                 UNITY_SETUP_INSTANCE_ID(v);
-
-                const float3 startVelocity = UNITY_ACCESS_INSTANCED_PROP(InstanceProperties, _StartVelocity);
-                const float3 startPosition = UNITY_ACCESS_INSTANCED_PROP(InstanceProperties, _StartPosition);
-                const float passedTime = UNITY_ACCESS_INSTANCED_PROP(InstanceProperties, _PassedTime);
+                
+                const float4 start_velocity_and_passed_time = UNITY_ACCESS_INSTANCED_PROP(InstanceProperties, _StartVelocityAndPassedTime);
+                const float passed_time = start_velocity_and_passed_time.w;
                 
                 const float3 cam_world_pos = _WorldSpaceCameraPos;
                 const float simulationTime = v.uv.x;
-                const float3 velocity = startVelocity + _Gravity * simulationTime;
-                const float3 position = startPosition +
-                        startVelocity * simulationTime +
+                const float3 velocity = start_velocity_and_passed_time.xyz + _Gravity * simulationTime;
+                const float3 position = start_velocity_and_passed_time.xyz * simulationTime +
                         (_Gravity * simulationTime * simulationTime) * 0.5f;
                 const float3 move_dir = normalize(velocity);
                 const float3 cam_to_vertex = cam_world_pos - position;
@@ -72,7 +68,7 @@ Shader "Trails/TrailInstanced"
                 
                 v2f o;
                 o.vertex = UnityObjectToClipPos(vertex_pos);
-                o.uv = float2(v.uv.x, passedTime);
+                o.uv = float2(v.uv.x, passed_time);
                
                 return o;
             }

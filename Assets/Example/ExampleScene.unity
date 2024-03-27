@@ -5582,6 +5582,7 @@ MonoBehaviour:
   width: 0.5
   trailOffset: 0
   segmentLength: 20
+  trailShowTime: 0.3
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

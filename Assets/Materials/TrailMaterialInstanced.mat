@@ -78,11 +78,12 @@ Material:
     - _SrcBlend: 1
     - _StartTime: 0
     - _TrailOffset: 0
+    - _TrailShowTime: 1
     - _TrailWidth: 1
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
-    - _Color: {r: 0.5471698, g: 0.5471698, b: 0.5471698, a: 1}
+    - _Color: {r: 0.98039216, g: 0.98039216, b: 0.98039216, a: 0.15294118}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _Gravity: {r: 0, g: 0, b: 0, a: 1}
     - _StartPosition: {r: 0, g: 0, b: 0, a: 1}
