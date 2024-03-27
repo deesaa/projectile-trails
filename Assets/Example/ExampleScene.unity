@@ -5502,10 +5502,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65a6f51ecd8b3b943a1b0459e4107cfa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rate: 100
+  rate: 50
   startingVelocity: 150
   maxAngle: 30
-  lifetime: 15
+  lifetime: 3
 --- !u!4 &1310455926
 Transform:
   m_ObjectHideFlags: 0
@@ -5581,7 +5581,7 @@ MonoBehaviour:
   trailMaterial: {fileID: 2100000, guid: 2d1b64e622c28df4a9319060c7e9da28, type: 2}
   width: 0.5
   trailOffset: 0
-  segmentLength: 20
+  segmentLength: 100
   trailShowTime: 0.3
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

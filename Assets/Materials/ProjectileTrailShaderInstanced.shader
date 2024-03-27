@@ -5,6 +5,7 @@ Shader "Trails/TrailInstanced"
         _Color ("Color", Color) = (1,1,1,1)
         _TrailWidth ("Trail Width", Float) = 1
         _TrailShowTime ("Trail Show Time", Float) = 1
+        _TrailLifeTime ("Trail Life Time", Float) = 1
         _TrailOffset ("Trail Offset", Float) = 0
         _Gravity ("Gravity", Vector) = (0, 0, 0)
     }
@@ -28,6 +29,7 @@ Shader "Trails/TrailInstanced"
                 float _TrailWidth;
                 float _TrailOffset;
                 float _TrailShowTime;
+                float _TrailLifeTime;
                 float4 _Color;
                 float3 _Gravity;
             CBUFFER_END
@@ -76,8 +78,9 @@ Shader "Trails/TrailInstanced"
             fixed4 frag(v2f i) : SV_Target
             {
                 const float alpha_cut = step(i.uv.x, i.uv.y); 
-                const float alpha_cut_back = 1 - smoothstep(i.uv.x, i.uv.y, i.uv.y - i.uv.x); 
-                return fixed4(_Color.rgb, alpha_cut_back * _Color.a * alpha_cut);
+                const float alpha_cut_back = 1 - smoothstep(i.uv.x, i.uv.y, i.uv.y - i.uv.x);
+                const float lifetime_cut = 1 - (i.uv.y / _TrailLifeTime);
+                return fixed4(_Color.rgb, lifetime_cut * alpha_cut_back * _Color.a * alpha_cut);
             }
             ENDCG
         }

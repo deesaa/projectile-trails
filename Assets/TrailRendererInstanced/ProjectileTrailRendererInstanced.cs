@@ -56,7 +56,8 @@ namespace TrailRenderer
         private Vector4[] _startVelocitiesAndPassedTime;
         private MaterialPropertyBlock _materialPropertyBlock;
         private Camera _camera;
-        
+        private static readonly int TrailLifeTime = Shader.PropertyToID("_TrailLifeTime");
+
         private void Start()
         {
             if (gun != null)
@@ -73,11 +74,16 @@ namespace TrailRenderer
                 _trailTransforms = new Matrix4x4[gun.maxProjectileCount];
                 _startVelocitiesAndPassedTime = new Vector4[gun.maxProjectileCount];
                 _vertexBufferUVs = new Vector2[_maxSumVerticesCount];
-                _sparseTrailIndex = new int[gun.maxProjectileCount];
                 _materialPropertyBlock = new MaterialPropertyBlock();
                 _materialPropertyBlock.SetVectorArray(StartVelocityAndPassedTime, _startVelocitiesAndPassedTime);
                 InitMesh(_maxTrailMeshSegments, _simulationTimeDelta);
                 _camera = Camera.main;
+                
+                _sparseTrailIndex = new int[gun.maxProjectileCount];
+                for (int i = 0; i < gun.maxProjectileCount; i++)
+                {
+                    _sparseTrailIndex[i] = i;
+                }
             }
         }
 
@@ -97,11 +103,12 @@ namespace TrailRenderer
                 _materialPropertyBlock.SetFloat(TrailShowTime, trailShowTime);
                 _materialPropertyBlock.SetVector(StartVelocityAndPassedTime, projectile.velocity);
                 _materialPropertyBlock.SetVector(Gravity, Physics.gravity);
+                _materialPropertyBlock.SetFloat(TrailLifeTime, gun.lifetime);
             }
-            
-            _sparseTrailIndex[_activeTrailsCount] = _activeTrailsCount;
-            _trailTransforms[_activeTrailsCount] = Matrix4x4.Translate(projectile.position);
-            _startVelocitiesAndPassedTime[_activeTrailsCount] = projectile.velocity;
+
+            var denseIndex = _sparseTrailIndex[index];
+            _trailTransforms[denseIndex] = Matrix4x4.Translate(projectile.position);
+            _startVelocitiesAndPassedTime[denseIndex] = projectile.velocity;
             _activeTrailsCount++;
         }
 
@@ -159,7 +166,7 @@ namespace TrailRenderer
             }
 
             float simulationTime = 0f;
-            for (int i = 0, vi = 0; i < meshSegmentsCount; i++, vi += 2)
+            for (int i = 0, vi = 0; i <= meshSegmentsCount; i++, vi += 2)
             {
                 _vertexBufferUVs[vi] = new Vector2(simulationTime, -1f);
                 _vertexBufferUVs[vi + 1] = new Vector2(simulationTime, 1f);
