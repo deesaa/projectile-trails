@@ -105,6 +105,7 @@ namespace TrailRenderer
                 _trailTransforms = new Matrix4x4[gun.maxProjectileCount];
                 _startVelocitiesAndPassedTime = new Vector4[gun.maxProjectileCount];
                 _vertexBufferUVs = new Vector2[_maxSumVerticesCount];
+                _sparseTrailIndex = new int[gun.maxProjectileCount];
                 _materialPropertyBlock = new MaterialPropertyBlock();
                 _materialPropertyBlock.SetVectorArray(StartVelocityAndPassedTime, _startVelocitiesAndPassedTime);
                 InitMesh(_maxTrailMeshSegments, _simulationTimeDelta);
@@ -130,14 +131,31 @@ namespace TrailRenderer
                 _materialPropertyBlock.SetVector(StartVelocityAndPassedTime, projectile.velocity);
                 _materialPropertyBlock.SetVector(Gravity, Physics.gravity);
             }
-            _trailTransforms[index] = Matrix4x4.Translate(projectile.position);
-            _startVelocitiesAndPassedTime[index] = projectile.velocity;
+
+            /*var denseIndex = index;
+            if (_freeTrailIndexes.Count != 0)
+            {
+                denseIndex = _freeTrailIndexes[^1];
+                _freeTrailIndexes.RemoveAt(_freeTrailIndexes.Count);
+            }
+            else
+            {
+                _activeTrailsCount++;
+            }*/
+            
+            
+            _sparseTrailIndex[_activeTrailsCount] = _activeTrailsCount;
+            _trailTransforms[_activeTrailsCount] = Matrix4x4.Translate(projectile.position);
+            _startVelocitiesAndPassedTime[_activeTrailsCount] = projectile.velocity;
+            _activeTrailsCount++;
         }
-        
+
+        private int[] _sparseTrailIndex;
         private void OnProjectileMoved(int index, ref Gun.Projectile projectile)
         {
-            var data = _startVelocitiesAndPassedTime[index];
-            _startVelocitiesAndPassedTime[index] = new Vector4(data.x, data.y, data.z, projectile.lifetime);
+            var denseIndex = _sparseTrailIndex[index];
+            var data = _startVelocitiesAndPassedTime[denseIndex];
+            _startVelocitiesAndPassedTime[denseIndex] = new Vector4(data.x, data.y, data.z, projectile.lifetime);
         }
         
 
@@ -148,8 +166,18 @@ namespace TrailRenderer
         /// <param name="projectile">The removed projectile.</param>
         private void OnProjectileRemoved(int index, ref Gun.Projectile projectile)
         {
-            
+            var denseIndex = _sparseTrailIndex[index];
+            var lastActiveIndex = _activeTrailsCount - 1;
+            _trailTransforms[denseIndex] = _trailTransforms[lastActiveIndex];
+            _trailTransforms[lastActiveIndex] = default;
+            _startVelocitiesAndPassedTime[denseIndex] = _startVelocitiesAndPassedTime[lastActiveIndex];
+            _startVelocitiesAndPassedTime[lastActiveIndex] = default;
+            _sparseTrailIndex[lastActiveIndex] = denseIndex;
+            _activeTrailsCount--;
         }
+
+        private int _activeTrailsCount;
+        private List<int> _freeTrailIndexes = new List<int>();
         
         //Renders all active trail meshes
         private void LateUpdate()
@@ -157,8 +185,9 @@ namespace TrailRenderer
             if(!_firstProjectileCreated) return;
             
             _materialPropertyBlock.SetVectorArray(StartVelocityAndPassedTime, _startVelocitiesAndPassedTime);
+            
             Graphics.DrawMeshInstanced(_meshInstance, 0, 
-                _materialInstance, _trailTransforms, _trailTransforms.Length, _materialPropertyBlock, 
+                _materialInstance, _trailTransforms, _activeTrailsCount, _materialPropertyBlock, 
                 ShadowCastingMode.Off, false, 0, _camera, LightProbeUsage.Off);
         }
     }
