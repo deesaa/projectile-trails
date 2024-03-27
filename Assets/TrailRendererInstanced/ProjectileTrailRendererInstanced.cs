@@ -45,14 +45,12 @@ namespace TrailRenderer
         private float _simulationTimeDelta;
         private int _maxTrailMeshSegments;
         private int _initedRenderersCount;
-        private int _activeTrailsCount;
         private int _maxSumVerticesCount;
         private bool _firstProjectileCreated;
         private Vector2[] _vertexBufferUVs;
         private Mesh _meshInstance;
         private Material _materialInstance;
         private Matrix4x4[] _trailTransforms;
-        private int[] _sparseTrailIndex;
         private Vector4[] _startVelocitiesAndPassedTime;
         private MaterialPropertyBlock _materialPropertyBlock;
         private Camera _camera;
@@ -63,7 +61,6 @@ namespace TrailRenderer
             if (gun != null)
             {
                 gun.onProjectileCreated += OnProjectileCreated;
-                gun.onProjectileRemoved += OnProjectileRemoved;
                 gun.onProjectileMoved += OnProjectileMoved;
             
                 _maxTrailPathLength = gun.startingVelocity * gun.lifetime + 
@@ -78,12 +75,6 @@ namespace TrailRenderer
                 _materialPropertyBlock.SetVectorArray(StartVelocityAndPassedTime, _startVelocitiesAndPassedTime);
                 InitMesh(_maxTrailMeshSegments, _simulationTimeDelta);
                 _camera = Camera.main;
-                
-                _sparseTrailIndex = new int[gun.maxProjectileCount];
-                for (int i = 0; i < gun.maxProjectileCount; i++)
-                {
-                    _sparseTrailIndex[i] = i;
-                }
             }
         }
 
@@ -105,35 +96,17 @@ namespace TrailRenderer
                 _materialPropertyBlock.SetVector(Gravity, Physics.gravity);
                 _materialPropertyBlock.SetFloat(TrailLifeTime, gun.lifetime);
             }
-
-            var denseIndex = _sparseTrailIndex[index];
-            _trailTransforms[denseIndex] = Matrix4x4.Translate(projectile.position);
-            _startVelocitiesAndPassedTime[denseIndex] = projectile.velocity;
-            _activeTrailsCount++;
+            
+            _trailTransforms[index] = Matrix4x4.Translate(projectile.position);
+            _startVelocitiesAndPassedTime[index] = projectile.velocity;
         }
 
         private void OnProjectileMoved(int index, ref Gun.Projectile projectile)
         {
-            var denseIndex = _sparseTrailIndex[index];
-            var data = _startVelocitiesAndPassedTime[denseIndex];
-            _startVelocitiesAndPassedTime[denseIndex] = new Vector4(data.x, data.y, data.z, projectile.lifetime);
+            var data = _startVelocitiesAndPassedTime[index];
+            _startVelocitiesAndPassedTime[index] = new Vector4(data.x, data.y, data.z, projectile.lifetime);
         }
         
-
-        /// <summary>
-        /// A callback that is called when a projectile is removed.
-        /// </summary>
-        /// <param name="index">Unique numeric ID of a projectile in range [0, gun.maxProjectileCount - 1].</param>
-        /// <param name="projectile">The removed projectile.</param>
-        private void OnProjectileRemoved(int index, ref Gun.Projectile projectile)
-        {
-            var denseIndex = _sparseTrailIndex[index];
-            var lastActiveIndex = _activeTrailsCount - 1;
-            _trailTransforms[denseIndex] = _trailTransforms[lastActiveIndex];
-            _startVelocitiesAndPassedTime[denseIndex] = _startVelocitiesAndPassedTime[lastActiveIndex];
-            _sparseTrailIndex[lastActiveIndex] = denseIndex;
-            _activeTrailsCount--;
-        }
         
         private void LateUpdate()
         {
@@ -141,7 +114,7 @@ namespace TrailRenderer
             
             _materialPropertyBlock.SetVectorArray(StartVelocityAndPassedTime, _startVelocitiesAndPassedTime);
             Graphics.DrawMeshInstanced(_meshInstance, 0, 
-                _materialInstance, _trailTransforms, _activeTrailsCount, _materialPropertyBlock, 
+                _materialInstance, _trailTransforms, gun.maxProjectileCount, _materialPropertyBlock, 
                 ShadowCastingMode.Off, false, 0, _camera, LightProbeUsage.Off);
         }
         
